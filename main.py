@@ -59,8 +59,7 @@ def train(args, model, optimizer, writer):
 
     start_time = time.time()
     for epoch in range(args.start_epoch, args.start_epoch + args.num_epochs):
-
-        loss_epoch = [0 for i in range(1)]
+        loss_epoch = 0
         for step, (audio, filename, _, start_idx) in enumerate(train_loader):
 
             if step % print_idx == 0:
@@ -83,11 +82,23 @@ def train(args, model, optimizer, writer):
 
             # backward
             model.zero_grad()
-            loss.backward()
+
+            if args.fp16:
+                with amp.scale_loss(loss, optimizer) as scaled_loss:
+                    loss.backward()
+            else:
+                loss.backward()
+
             optimizer.step()
 
             if step % print_idx == 0:
                 print("\t \t Loss: \t \t {:.4f}".format(loss.item()))
+
+            loss_epoch += loss
+
+        avg_loss = loss_epoch / len(train_loader)
+        writer.add_scalar("Train/loss", avg_loss)
+        ex.add_scalar("train.loss", avg_loss)
 
 
 @ex.automain
@@ -116,10 +127,6 @@ def main(_run, _log):
 
     # load model
     model, optimizer = load_model(args)
-
-    model = model.to(args.device)
-
-    print(model)
 
     # set comment to experiment's name
     tb_dir = os.path.join(out_dir, _run.experiment_info["name"])
