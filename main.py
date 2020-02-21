@@ -1,9 +1,9 @@
-import sys
 import os
 import argparse
 import time
 import torch
 import numpy as np
+from datetime import datetime
 
 # Apex for mixed-precision training
 from apex import amp
@@ -17,10 +17,9 @@ from sacred.observers import FileStorageObserver, MongoObserver
 from torch.utils.tensorboard import SummaryWriter
 
 
-from utils.yaml_config_hook import yaml_config_hook
-from data.loaders import librispeech_loader
-
 from model import load_model
+from data.loaders import librispeech_loader
+from utils.yaml_config_hook import yaml_config_hook
 
 #### pass configuration
 ex = Experiment("contrastive-predictive-coding")
@@ -62,16 +61,6 @@ def train(args, model, optimizer, writer):
         loss_epoch = 0
         for step, (audio, filename, _, start_idx) in enumerate(train_loader):
 
-            if step % print_idx == 0:
-                print(
-                    "Epoch [{}/{}], Step [{}/{}], Time (s): {:.3f}".format(
-                        epoch + 1,
-                        args.start_epoch + args.num_epochs,
-                        step,
-                        total_step,
-                        time.time() - start_time,
-                    )
-                )
 
             start_time = time.time()
 
@@ -80,9 +69,8 @@ def train(args, model, optimizer, writer):
             # forward
             loss = model(audio)
 
-            # backward
+            # backward, depending on mixed-precision
             model.zero_grad()
-
             if args.fp16:
                 with amp.scale_loss(loss, optimizer) as scaled_loss:
                     loss.backward()
@@ -92,7 +80,19 @@ def train(args, model, optimizer, writer):
             optimizer.step()
 
             if step % print_idx == 0:
-                print("\t \t Loss: \t \t {:.4f}".format(loss.item()))
+                examples_per_second = args.batch_size / (time.time() - start_time)
+                print(
+                    "[{}] Train step {:04d}/{:04d} \t examples/s = {:.2f} \t "
+                    "loss = {:.4f} \t time/step = {:.4f}".format(
+                        datetime.now().strftime("%Y-%m-%d %H:%M"),
+                        step,
+                        len(train_loader),
+                        examples_per_second,
+                        loss,
+                        time.time() - start_time
+                    )
+                )
+
 
             loss_epoch += loss
 
