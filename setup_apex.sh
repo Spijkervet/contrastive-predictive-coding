@@ -5,7 +5,7 @@ eval "$(conda shell.bash hook)"
 export CUDA_HOME=/usr/local/cuda-10.1
 
 # make directories for apex
-mkdir ~/lib && cd ~/lib
+mkdir -p ~/lib && cd ~/lib
 git clone https://github.com/NVIDIA/apex
 cd apex
 
