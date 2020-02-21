@@ -20,6 +20,8 @@ from torch.utils.tensorboard import SummaryWriter
 from utils.yaml_config_hook import yaml_config_hook
 from data.loaders import librispeech_loader
 
+from model import load_model
+
 #### pass configuration
 ex = Experiment("contrastive-predictive-coding")
 
@@ -45,7 +47,7 @@ def my_config():
     #   {'start_epoch': start_epoch})
 
 
-def train(args):
+def train(args, model, optimizer, writer):
 
     # get datasets and dataloaders
     (train_loader, train_dataset, test_loader, test_dataset,) = librispeech_loader(
@@ -58,7 +60,7 @@ def train(args):
     start_time = time.time()
     for epoch in range(args.start_epoch, args.start_epoch + args.num_epochs):
 
-        loss_epoch = [0 for i in range(args.model_splits)]
+        loss_epoch = [0 for i in range(1)]
         for step, (audio, filename, _, start_idx) in enumerate(train_loader):
 
             if step % print_idx == 0:
@@ -73,6 +75,19 @@ def train(args):
                 )
 
             start_time = time.time()
+
+            audio = audio.to(args.device)
+
+            # forward
+            loss = model(audio)
+
+            # backward
+            model.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            if step % print_idx == 0:
+                print("\t \t Loss: \t \t {:.4f}".format(loss.item()))
 
 
 @ex.automain
@@ -100,6 +115,11 @@ def main(_run, _log):
     # initialize logger
 
     # load model
+    model, optimizer = load_model(args)
+
+    model = model.to(args.device)
+
+    print(model)
 
     # set comment to experiment's name
     tb_dir = os.path.join(out_dir, _run.experiment_info["name"])
@@ -107,7 +127,7 @@ def main(_run, _log):
     writer = SummaryWriter(log_dir=tb_dir)
 
     try:
-        train(args)  # , model, optimizer, writer, logs)
+        train(args, model, optimizer, writer)
     except KeyboardInterrupt:
         print("Interrupting training, saving logs")
 

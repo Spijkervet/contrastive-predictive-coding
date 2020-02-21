@@ -1,2 +1,5 @@
-./datasets
-./config
+__pycache__
+
+config
+datasets
+logs
