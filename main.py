@@ -8,10 +8,6 @@ from datetime import datetime
 # Apex for mixed-precision training
 from apex import amp
 
-# Sacred
-from sacred import Experiment
-from sacred.stflow import LogFileWriter
-from sacred.observers import FileStorageObserver, MongoObserver
 
 # TensorBoard
 from torch.utils.tensorboard import SummaryWriter
@@ -19,32 +15,9 @@ from torch.utils.tensorboard import SummaryWriter
 
 from model import load_model
 from data.loaders import librispeech_loader
-from utils.yaml_config_hook import yaml_config_hook
 
 #### pass configuration
-ex = Experiment("contrastive-predictive-coding")
-
-#### file output directory
-ex.observers.append(FileStorageObserver("./logs"))
-
-#### database output
-ex.observers.append(
-    MongoObserver().create(
-        url=f"mongodb://admin:admin@localhost:27017/?authMechanism=SCRAM-SHA-1",
-        db_name="db",
-    )
-)
-
-
-@ex.config
-def my_config():
-    yaml_config_hook("./config/audio/config.yaml", ex)
-
-    # override any settings here
-    # start_epoch = 100
-    # ex.add_config(
-    #   {'start_epoch': start_epoch})
-
+from experiment import ex
 
 def train(args, model, optimizer, writer):
 
@@ -102,7 +75,6 @@ def train(args, model, optimizer, writer):
 
 
 @ex.automain
-@LogFileWriter(ex)
 def main(_run, _log):
     args = argparse.Namespace(**_run.config)
 
