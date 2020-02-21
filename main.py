@@ -15,6 +15,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from model import load_model
 from data.loaders import librispeech_loader
+from validation import validate_speakers
 
 #### pass configuration
 from experiment import ex
@@ -29,16 +30,21 @@ def train(args, model, optimizer, writer):
     total_step = len(train_loader)
     print_idx = 100
 
+    # at which step to validate training
+    validation_idx = 1000
+
     start_time = time.time()
     for epoch in range(args.start_epoch, args.start_epoch + args.num_epochs):
         loss_epoch = 0
         for step, (audio, filename, _, start_idx) in enumerate(train_loader):
 
-
             start_time = time.time()
 
-            audio = audio.to(args.device)
+            if step % validation_idx == 0:
+                validate_speakers(args, train_dataset, model, optimizer, epoch, step, writer)
 
+
+            audio = audio.to(args.device)
             # forward
             loss = model(audio)
 

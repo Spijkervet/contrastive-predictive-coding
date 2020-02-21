@@ -10,6 +10,8 @@ class Module(torch.nn.Module):
     ):
         super(Module, self).__init__()
 
+        self.args = args
+
         """
         First, a non-linear encoder genc maps the input sequence of observations xt to a
         sequence of latent representations zt = genc(xt), potentially with a lower temporal resolution.
@@ -23,7 +25,16 @@ class Module(torch.nn.Module):
 
         self.loss = InfoNCE(args, gar_hidden, genc_hidden)
 
-    def forward(self, x):
+    def get_latent_size(self, input_size):
+        x = torch.zeros(input_size).to(self.args.device)
+
+        if self.args.fp16:
+            x = x.half()
+
+        z, c = self.get_latent_representations(x)
+        return c.size(2), c.size(1)
+
+    def get_latent_representations(self, x):
         """
         Calculate latent representation of the input with the encoder and autoregressor
         :param x: inputs (B x C x L)
@@ -33,13 +44,20 @@ class Module(torch.nn.Module):
                 c - latent representation of the autoregressor  (B x C x L)
         """
 
+        if self.args.fp16:
+            x = x.half()
+
         # calculate latent represention from the encoder
         z = self.encoder(x)
         z = z.permute(0, 2, 1)  # swap L and C
 
         # calculate latent representation from the autoregressor
         c = self.autoregressor(z)
+        return z, c
 
+
+    def forward(self, x):
+        z, c = self.get_latent_representations(x)
         loss, accuracy = self.loss.get(x, z, c)
         return loss, accuracy, z, c
 
