@@ -27,7 +27,7 @@ def train(args, model, optimizer, writer):
     )
 
     total_step = len(train_loader)
-    print_idx = 1
+    print_idx = 100
 
     start_time = time.time()
     for epoch in range(args.start_epoch, args.start_epoch + args.num_epochs):
@@ -55,9 +55,10 @@ def train(args, model, optimizer, writer):
             if step % print_idx == 0:
                 examples_per_second = args.batch_size / (time.time() - start_time)
                 print(
-                    "[{}] Train step {:04d}/{:04d} \t examples/s = {:.2f} \t "
-                    "loss = {:.4f} \t time/step = {:.4f}".format(
-                        datetime.now().strftime("%Y-%m-%d %H:%M"),
+                    "[Epoch {}/{}] Train step {:04d}/{:04d} \t Examples/s = {:.2f} \t "
+                    "Loss = {:.4f} \t Time/step = {:.4f}".format(
+                        epoch,
+                        args.num_epochs,
                         step,
                         len(train_loader),
                         examples_per_second,
@@ -70,8 +71,8 @@ def train(args, model, optimizer, writer):
             loss_epoch += loss
 
         avg_loss = loss_epoch / len(train_loader)
-        writer.add_scalar("Train/loss", avg_loss)
-        ex.add_scalar("train.loss", avg_loss)
+        writer.add_scalar("Train/loss", avg_loss, epoch)
+        ex.log_scalar("train.loss", avg_loss, epoch)
 
 
 @ex.automain
