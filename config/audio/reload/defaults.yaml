@@ -1,0 +1,9 @@
+# Epoch to start CPC training from:
+# (path to model is specified in opt.model_path)
+start_epoch: 0
+
+model_path: "." # Directory of the saved model
+
+# Number of the saved model to be used for testing pre-trained models
+# (loaded using model_path + model_X.ckpt, where X is the model_num passed here)
+model_num: ""

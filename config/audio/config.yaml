@@ -1,0 +1,10 @@
+time: 0
+device: "gpu"
+experiment: "audio"
+fp16: True
+fp16_opt_level: "O2"
+num_workers: 16
+defaults:
+  - general: defaults
+  - cpc: defaults
+  - reload: defaults

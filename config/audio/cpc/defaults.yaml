@@ -1,0 +1,4 @@
+learning_rate: 1.5e-4 # Learning rate
+prediction_step: 12 # Time steps k to predict into future
+negative_samples: 10 # Number of negative samples to be used for training
+subsample: True # Boolean to decide whether to subsample from the total sequence lengh within intermediate layers
