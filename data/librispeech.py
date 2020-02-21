@@ -1,4 +1,5 @@
 import os
+import torch
 import torchaudio
 import numpy as np
 from torch.utils.data import Dataset
@@ -70,3 +71,14 @@ class LibriDataset(Dataset):
 
     def __len__(self):
         return len(self.file_list)
+
+
+    def get_audio_by_speaker(self, speaker_id, batch_size):
+        batch_size = min(len(self.speaker_dict[speaker_id]), batch_size)
+        batch = torch.zeros(batch_size, 1, self.audio_length)
+        for idx in range(batch_size):
+            batch[idx, 0, :], _, _, _ = self.__getitem__(
+                self.speaker_dict[speaker_id][idx]
+            )
+
+        return batch
