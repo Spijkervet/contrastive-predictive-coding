@@ -1,6 +1,6 @@
 import os
 import torch
-from modules import AudioModel
+from modules import AudioModel, VisionModel
 
 
 def audio_model(args):
@@ -20,13 +20,18 @@ def audio_model(args):
     )
     return model
 
+def vision_model(args):
+    model = VisionModel(args)
+    return model
+
 
 def load_model(args):
 
     if args.experiment == "audio":
         model = audio_model(args)
     else:
-        raise NotImplementedError
+        model = vision_model(args)
+        # raise NotImplementedError
 
     # reload model
     if args.start_epoch > 0:

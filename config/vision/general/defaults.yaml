@@ -1,0 +1,20 @@
+num_epochs: 300 # Number of Epochs for Training
+seed: 2 # Random seed for training
+batch_size: 32
+data_input_dir: "./datasets" # Directory to store bigger datafiles (dataset and audio_models)
+data_output_dir: "." # Directory to store bigger datafiles (dataset and audio_models)
+validate: False # Boolean to decide whether to split train dataset into train/val and plot validation loss
+
+# If given, uses this string to create directory to save results in
+# be careful, this can overwrite previous results
+# otherwise saves logs according to time-stamp
+save_dir: ""
+
+resnet: 50 # Resnet version (options 34 and 50)
+dataset: "stl10" # Dataset to use for training, default: stl10
+
+# Boolean to decide whether to convert images to grayscale (default: false)
+grayscale: False
+
+# Boolean to decide whether to use special weight initialization (delta orthogonal)
+weight_init: False

@@ -1,0 +1,11 @@
+time: 0
+device: "gpu"
+experiment: "vision"
+fp16: False
+fp16_opt_level: "O2"
+num_workers: 16
+download_dataset: False 
+defaults:
+  - general: defaults
+  - cpc: defaults
+  - reload: defaults

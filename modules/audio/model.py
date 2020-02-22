@@ -30,4 +30,4 @@ class Model(torch.nn.Module):
         """Forward through the network"""
 
         loss, accuracy, _, z = self.model(x)
-        return loss
+        return loss, accuracy

@@ -1,0 +1,11 @@
+learning_rate: 2.0e-4 # Learning rate
+prediction_step: 5 # Time steps k to predict into future
+negative_samples: 16 # Number of negative samples to be used for training
+
+# Number of individually trained modules that the original model should be split into
+# options: 1 (normal end-to-end backprop) or 3 (default used in experiments of paper)
+model_splits: 3
+
+# Index of the module to be trained individually (0-2),
+# or training network as one (3)
+train_module: 3

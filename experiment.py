@@ -27,7 +27,7 @@ ex.observers.append(FileStorageObserver("./logs"))
 
 @ex.config
 def my_config():
-    yaml_config_hook("./config/audio/config.yaml", ex)
+    yaml_config_hook("./config/vision/config.yaml", ex)
 
     # override any settings here
     # start_epoch = 100

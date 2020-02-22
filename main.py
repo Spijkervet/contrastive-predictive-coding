@@ -14,7 +14,8 @@ from torch.utils.tensorboard import SummaryWriter
 
 
 from model import load_model, save_model
-from data.loaders import librispeech_loader
+from data.audio.loaders import librispeech_loader
+from data.vision.loaders import stl10_loader
 from validation import validate_speakers
 
 #### pass configuration
@@ -24,9 +25,19 @@ from experiment import ex
 def train(args, model, optimizer, writer):
 
     # get datasets and dataloaders
-    (train_loader, train_dataset, test_loader, test_dataset,) = librispeech_loader(
-        args, num_workers=args.num_workers
-    )
+    if args.experiment == 'audio':
+        (train_loader, train_dataset, test_loader, test_dataset,) = librispeech_loader(
+            args, num_workers=args.num_workers
+        )
+    elif args.experiment == 'vision':
+        (
+            unsupervised_loader,
+            unsupervised_dataset,
+            train_loader,
+            train_dataset,
+            test_loader,
+            test_dataset
+        ) = stl10_loader(args, num_workers=args.num_workers)
 
     total_step = len(train_loader)
     print_idx = 100
@@ -40,17 +51,17 @@ def train(args, model, optimizer, writer):
     global_step = 0
     for epoch in range(args.start_epoch, args.start_epoch + args.num_epochs):
         loss_epoch = 0
-        for step, (audio, filename, _, start_idx) in enumerate(train_loader):
+        for step, (x, y) in enumerate(train_loader):
 
             start_time = time.time()
 
             # if step % validation_idx == 0:
             #     validate_speakers(args, train_dataset, model, optimizer, epoch, step, global_step, writer)
 
-            audio = audio.to(args.device)
+            x = x.to(args.device)
 
             # forward
-            loss = model(audio)
+            loss, _ = model(x)
 
             # accumulate losses for all GPUs
             loss = loss.mean()

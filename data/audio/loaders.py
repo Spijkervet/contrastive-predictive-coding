@@ -1,7 +1,7 @@
 import os
 import torch
 
-from data.librispeech import LibriDataset
+from data.audio.librispeech import LibriDataset
 
 def librispeech_loader(opt, num_workers=16):
 
