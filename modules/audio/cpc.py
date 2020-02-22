@@ -2,7 +2,6 @@ import torch
 from .encoder import Encoder
 from .autoregressor import Autoregressor
 from .infonce import InfoNCE
-import pdb
 
 class CPC(torch.nn.Module):
     def __init__(
