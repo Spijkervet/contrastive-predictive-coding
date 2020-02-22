@@ -28,6 +28,12 @@ def load_model(args):
     else:
         raise NotImplementedError
 
+    # reload model
+    if args.start_epoch > 0:
+        print("### RELOADING MODEL FROM CHECKPOINT {} ###".format(args.start_epoch))
+        model_fp = os.path.join(args.model_path, 'checkpoint_{}.tar'.format(args.start_epoch))
+        model.load_state_dict(torch.load(model_fp))
+
     model = model.to(args.device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
@@ -47,7 +53,6 @@ def load_model(args):
 
     print("Using {} GPUs".format(torch.cuda.device_count()))
     model = torch.nn.DataParallel(model)
-
     return model, optimizer
 
 def save_model(args, model, optimizer, best=False):
@@ -55,7 +60,10 @@ def save_model(args, model, optimizer, best=False):
         out = os.path.join(args.out_dir, 'best_checkpoint.tar')
     else:
         out = os.path.join(args.out_dir, 'checkpoint_{}.tar'.format(args.current_epoch))
-    torch.save(model.state_dict(), out)
+
+    # To save a DataParallel model generically, save the model.module.state_dict().
+    # This way, you have the flexibility to load the model any way you want to any device you want.
+    torch.save(model.module.state_dict(), out)
 
     with open(os.path.join(args.out_dir, 'best_checkpoint.txt'), 'w') as f:
         f.write(str(args.current_epoch))

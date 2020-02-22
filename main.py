@@ -109,7 +109,7 @@ def main(_run, _log):
     # Device configuration
     args.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    args.current_epoch = 0
+    args.current_epoch = args.start_epoch
 
     # set random seeds
     np.random.seed(args.seed)
