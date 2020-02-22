@@ -1,15 +1,15 @@
 import torch
-from modules import Model 
+from modules import AudioModel
 
 
-def load_model(args):
+def audio_model(args):
     strides = [5, 4, 2, 2, 2]
     filter_sizes = [10, 8, 4, 4, 4]
     padding = [2, 2, 2, 2, 1]
     genc_hidden = 512
     gar_hidden = 256
 
-    model = Model(
+    model = AudioModel(
         args,
         strides=strides,
         filter_sizes=filter_sizes,
@@ -17,6 +17,15 @@ def load_model(args):
         genc_hidden=genc_hidden,
         gar_hidden=gar_hidden,
     )
+    return model
+
+
+def load_model(args):
+
+    if args.experiment == "audio":
+        model = audio_model(args)
+    else:
+        raise NotImplementedError
 
     model = model.to(args.device)
 

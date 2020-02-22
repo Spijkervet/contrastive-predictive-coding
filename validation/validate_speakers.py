@@ -30,7 +30,9 @@ def validate_speakers(args, dataset, model, optimizer, epoch, step, writer):
 
     model.eval()
     with torch.no_grad():
-        latent_rep_size, latent_rep_len = model.model.get_latent_size(input_size)
+        # DataParallel wraps model in module
+        model = model.module.model
+        latent_rep_size, latent_rep_len = model.get_latent_size(input_size)
         features = torch.zeros(max_speakers, batch_size, latent_rep_size * latent_rep_len).to(args.device)
         labels = torch.zeros(max_speakers, batch_size).to(args.device)
 
@@ -40,7 +42,7 @@ def validate_speakers(args, dataset, model, optimizer, epoch, step, writer):
 
             model_in = dataset.get_audio_by_speaker(speaker_idx, batch_size=batch_size)
             model_in = model_in.to(args.device)
-            z, c = model.model.get_latent_representations(model_in)
+            z, c = model.get_latent_representations(model_in)
             
             z_repr = z.permute(0, 2, 1)
             c_repr = c.permute(0, 2, 1)

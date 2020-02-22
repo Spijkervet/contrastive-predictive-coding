@@ -1,1 +1,1 @@
-from .model import Model
+from .audio.model import Model as AudioModel

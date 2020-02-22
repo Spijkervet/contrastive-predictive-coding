@@ -103,8 +103,6 @@ def main(_run, _log):
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
 
-    # initialize logger
-
     # load model
     model, optimizer = load_model(args)
 
@@ -116,7 +114,7 @@ def main(_run, _log):
     try:
         train(args, model, optimizer, writer)
     except KeyboardInterrupt:
-        print("Interrupting training, saving logs")
+        print("Interrupting training, saving model")
 
 
 if __name__ == "__main__":
