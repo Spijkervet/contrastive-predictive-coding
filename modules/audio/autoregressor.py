@@ -13,7 +13,7 @@ class Autoregressor(nn.Module):
         self.autoregressor = nn.GRU(self.input_dim, self.hidden_dim, batch_first=True)
 
     def forward(self, x):
-        h0 = torch.zeros(1, x.size(0), self.hidden_dim).to(self.args.device)
+        h0 = torch.zeros(1, x.size(0), self.hidden_dim).to(x.get_device())
         self.autoregressor.flatten_parameters()
         out, _ = self.autoregressor(x, h0)
         return out

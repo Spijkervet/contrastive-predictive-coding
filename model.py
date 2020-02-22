@@ -51,8 +51,12 @@ def load_model(args):
             model, optimizer, opt_level=args.fp16_opt_level
         )
 
-    print("Using {} GPUs".format(torch.cuda.device_count()))
+    args.num_gpu = torch.cuda.device_count()
+    print("Using {} GPUs".format(args.num_gpu))
+
     model = torch.nn.DataParallel(model)
+    model = model.to(args.device)
+    args.batch_size = args.batch_size * args.num_gpu
     return model, optimizer
 
 def save_model(args, model, optimizer, best=False):
