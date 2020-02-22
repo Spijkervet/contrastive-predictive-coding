@@ -4,6 +4,7 @@ import time
 import torch
 import numpy as np
 from datetime import datetime
+
 # Apex for mixed-precision training
 from apex import amp
 
@@ -18,6 +19,7 @@ from validation import validate_speakers
 
 #### pass configuration
 from experiment import ex
+
 
 def train(args, model, optimizer, writer):
 
@@ -42,8 +44,8 @@ def train(args, model, optimizer, writer):
 
             start_time = time.time()
 
-            if step % validation_idx == 0:
-                validate_speakers(args, train_dataset, model, optimizer, epoch, step, global_step, writer)
+            # if step % validation_idx == 0:
+            #     validate_speakers(args, train_dataset, model, optimizer, epoch, step, global_step, writer)
 
             audio = audio.to(args.device)
 
@@ -73,7 +75,7 @@ def train(args, model, optimizer, writer):
                         len(train_loader),
                         examples_per_second,
                         loss,
-                        time.time() - start_time
+                        time.time() - start_time,
                     )
                 )
 
@@ -84,7 +86,24 @@ def train(args, model, optimizer, writer):
         avg_loss = loss_epoch / len(train_loader)
         writer.add_scalar("Loss/train", avg_loss, epoch)
         ex.log_scalar("loss.train", avg_loss, epoch)
-        args.current_epoch += 1
+
+        conv = 0
+        for idx, layer in enumerate(model.module.model.modules()):
+            if isinstance(layer, torch.nn.Conv1d):
+                writer.add_histogram(
+                    "Conv/weights-{}".format(conv),
+                    layer.weight,
+                    global_step=global_step,
+                )
+                conv += 1
+
+            if isinstance(layer, torch.nn.GRU):
+                writer.add_histogram(
+                    "GRU/weight_ih_l0", layer.weight_ih_l0, global_step=global_step
+                )
+                writer.add_histogram(
+                    "GRU/weight_hh_l0", layer.weight_hh_l0, global_step=global_step
+                )
 
         if avg_loss > best_loss:
             best_loss = avg_loss
@@ -92,6 +111,7 @@ def train(args, model, optimizer, writer):
 
         # save current model state
         save_model(args, model, optimizer)
+        args.current_epoch += 1
 
 
 @ex.automain
@@ -120,10 +140,11 @@ def main(_run, _log):
     # load model
     model, optimizer = load_model(args)
 
-    # set comment to experiment's name
+    # initialize TensorBoard
     tb_dir = os.path.join(out_dir, _run.experiment_info["name"])
     os.makedirs(tb_dir)
     writer = SummaryWriter(log_dir=tb_dir)
+    writer.add_graph(model.module, torch.rand(args.batch_size, 1, 20480).to(args.device))
 
     try:
         train(args, model, optimizer, writer)
