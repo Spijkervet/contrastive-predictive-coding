@@ -40,7 +40,7 @@ def train(args, model, optimizer, writer):
         ) = stl10_loader(args, num_workers=args.num_workers)
 
     total_step = len(train_loader)
-    print_idx = 100
+    print_idx = 1
 
     # at which step to validate training
     validation_idx = 1000
@@ -61,7 +61,10 @@ def train(args, model, optimizer, writer):
             x = x.to(args.device)
 
             # forward
-            loss, _ = model(x)
+            if args.experiment == 'audio':
+                loss, _ = model(x)
+            elif args.experiment == 'vision':
+                loss, _, _, _ = model(x, y)
 
             # accumulate losses for all GPUs
             loss = loss.mean()

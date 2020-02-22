@@ -21,7 +21,9 @@ def audio_model(args):
     return model
 
 def vision_model(args):
-    model = VisionModel(args)
+    block_dims = [3, 4, 6, 6, 6, 6, 6]
+    num_channels = [64, 128, 256, 256, 256, 256, 256]
+    model = VisionModel(args, block_dims, num_channels)
     return model
 
 
