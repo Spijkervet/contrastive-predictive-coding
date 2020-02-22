@@ -1,3 +1,4 @@
+import os
 import torch
 from modules import AudioModel
 
@@ -48,3 +49,13 @@ def load_model(args):
     model = torch.nn.DataParallel(model)
 
     return model, optimizer
+
+def save_model(args, model, optimizer, best=False):
+    if best:
+        out = os.path.join(args.out_dir, 'best_checkpoint.tar')
+    else:
+        out = os.path.join(args.out_dir, 'checkpoint_{}.tar'.format(args.current_epoch))
+    torch.save(model.state_dict(), out)
+
+    with open(os.path.join(args.out_dir, 'best_checkpoint.txt'), 'w') as f:
+        f.write(str(args.current_epoch))

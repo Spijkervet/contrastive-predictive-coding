@@ -12,7 +12,7 @@ from apex import amp
 from torch.utils.tensorboard import SummaryWriter
 
 
-from model import load_model
+from model import load_model, save_model
 from data.loaders import librispeech_loader
 from validation import validate_speakers
 
@@ -31,6 +31,8 @@ def train(args, model, optimizer, writer):
 
     # at which step to validate training
     validation_idx = 1000
+
+    best_loss = 0
 
     start_time = time.time()
     global_step = 0
@@ -80,6 +82,14 @@ def train(args, model, optimizer, writer):
         avg_loss = loss_epoch / len(train_loader)
         writer.add_scalar("Loss/train", avg_loss, epoch)
         ex.log_scalar("loss.train", avg_loss, epoch)
+        args.current_epoch += 1
+
+        if avg_loss > best_loss:
+            best_loss = avg_loss
+            save_model(args, model, optimizer, best=True)
+
+        # save current model state
+        save_model(args, model, optimizer)
 
 
 @ex.automain
@@ -99,6 +109,8 @@ def main(_run, _log):
     # Device configuration
     args.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+    args.current_epoch = 0
+
     # set random seeds
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -115,6 +127,8 @@ def main(_run, _log):
         train(args, model, optimizer, writer)
     except KeyboardInterrupt:
         print("Interrupting training, saving model")
+
+    save_model(args, model, optimizer)
 
 
 if __name__ == "__main__":
