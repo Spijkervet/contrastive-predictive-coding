@@ -14,13 +14,13 @@ class Encoder(nn.Module):
             len(strides) == len(filter_sizes) == len(padding)
         ), "Inconsistent length of strides, filter sizes and padding"
 
-        self.encoder = nn.Sequential()
+        self.seq = nn.Sequential()
         for idx, (s, f, p) in enumerate(zip(strides, filter_sizes, padding)):
             block = nn.Sequential(
                 nn.Conv1d(input_dim, hidden_dim, f, stride=s, padding=p), nn.ReLU()
             )
-            self.encoder.add_module("layer-{}".format(idx), block)
+            self.seq.add_module("layer-{}".format(idx), block)
             input_dim = hidden_dim
 
     def forward(self, x):
-        return self.encoder(x)
+        return self.seq(x)

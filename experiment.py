@@ -17,12 +17,12 @@ ex = Experiment("contrastive-predictive-coding")
 ex.observers.append(FileStorageObserver("./logs"))
 
 #### database output
-ex.observers.append(
-    MongoObserver().create(
-        url=f"mongodb://admin:admin@localhost:27017/?authMechanism=SCRAM-SHA-1",
-        db_name="db",
-    )
-)
+# ex.observers.append(
+#     MongoObserver().create(
+#         url=f"mongodb://admin:admin@localhost:27017/?authMechanism=SCRAM-SHA-1",
+#         db_name="db",
+#     )
+# )
 
 
 @ex.config

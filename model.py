@@ -1,5 +1,5 @@
-import torch.optim as optim
-from modules import CPC
+import torch
+from modules import Model 
 
 
 def load_model(args):
@@ -9,7 +9,7 @@ def load_model(args):
     genc_hidden = 512
     gar_hidden = 256
 
-    cpc = CPC(
+    model = Model(
         args,
         strides=strides,
         filter_sizes=filter_sizes,
@@ -18,10 +18,9 @@ def load_model(args):
         gar_hidden=gar_hidden,
     )
 
-    cpc = cpc.to(args.device)
+    model = model.to(args.device)
 
-
-    optimizer = optim.Adam(cpc.parameters(), lr=args.learning_rate)
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
 
     if args.fp16:
         try:
@@ -32,8 +31,11 @@ def load_model(args):
             )
 
         print("### USING FP16 ###")
-        cpc, optimizer = amp.initialize(
-            cpc, optimizer, opt_level=args.fp16_opt_level
+        model, optimizer = amp.initialize(
+            model, optimizer, opt_level=args.fp16_opt_level
         )
 
-    return cpc, optimizer
+    print("Using {} GPUs".format(torch.cuda.device_count()))
+    model = torch.nn.DataParallel(model)
+
+    return model, optimizer

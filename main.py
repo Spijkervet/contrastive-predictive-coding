@@ -4,7 +4,6 @@ import time
 import torch
 import numpy as np
 from datetime import datetime
-
 # Apex for mixed-precision training
 from apex import amp
 
@@ -34,6 +33,7 @@ def train(args, model, optimizer, writer):
     validation_idx = 1000
 
     start_time = time.time()
+    global_step = 0
     for epoch in range(args.start_epoch, args.start_epoch + args.num_epochs):
         loss_epoch = 0
         for step, (audio, filename, _, start_idx) in enumerate(train_loader):
@@ -43,8 +43,8 @@ def train(args, model, optimizer, writer):
             if step % validation_idx == 0:
                 validate_speakers(args, train_dataset, model, optimizer, epoch, step, writer)
 
-
             audio = audio.to(args.device)
+
             # forward
             loss = model(audio)
 
@@ -52,7 +52,7 @@ def train(args, model, optimizer, writer):
             model.zero_grad()
             if args.fp16:
                 with amp.scale_loss(loss, optimizer) as scaled_loss:
-                    loss.backward()
+                    scaled_loss.backward()
             else:
                 loss.backward()
 
@@ -73,12 +73,13 @@ def train(args, model, optimizer, writer):
                     )
                 )
 
-
+            writer.add_scalar("Loss/train_step", loss, global_step)
             loss_epoch += loss
+            global_step += 1
 
         avg_loss = loss_epoch / len(train_loader)
-        writer.add_scalar("Train/loss", avg_loss, epoch)
-        ex.log_scalar("train.loss", avg_loss, epoch)
+        writer.add_scalar("Loss/train", avg_loss, epoch)
+        ex.log_scalar("loss.train", avg_loss, epoch)
 
 
 @ex.automain

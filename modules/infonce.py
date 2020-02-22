@@ -161,7 +161,6 @@ class InfoNCE(nn.Module):
             total_loss += loss
 
             # calculate accuracy
-
             if self.args.calc_accuracy:
                 predicted = torch.argmax(results, 1)
                 correct = (

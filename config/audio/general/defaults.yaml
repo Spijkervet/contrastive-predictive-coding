@@ -1,4 +1,4 @@
-num_epochs: 1000 # Number of Epochs for Training
+num_epochs: 300 # Number of Epochs for Training
 seed: 2 # Random seed for training
 batch_size: 8
 data_input_dir: "./datasets" # Directory to store bigger datafiles (dataset and audio_models)

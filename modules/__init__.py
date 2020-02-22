@@ -1,1 +1,1 @@
-from .cpc import CPC
+from .model import Model
