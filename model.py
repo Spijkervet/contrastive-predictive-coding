@@ -36,7 +36,7 @@ def load_model(args):
 
     model = model.to(args.device)
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate) 
 
     if args.fp16:
         try:

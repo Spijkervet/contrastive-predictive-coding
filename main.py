@@ -43,12 +43,14 @@ def train(args, model, optimizer, writer):
             start_time = time.time()
 
             if step % validation_idx == 0:
-                validate_speakers(args, train_dataset, model, optimizer, epoch, step, writer)
+                validate_speakers(args, train_dataset, model, optimizer, epoch, step, global_step, writer)
 
             audio = audio.to(args.device)
 
             # forward
             loss = model(audio)
+
+            # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=10)
 
             # backward, depending on mixed-precision
             model.zero_grad()
