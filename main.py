@@ -44,8 +44,8 @@ def train(args, model, optimizer, writer):
 
             start_time = time.time()
 
-            # if step % validation_idx == 0:
-            #     validate_speakers(args, train_dataset, model, optimizer, epoch, step, global_step, writer)
+            if step % validation_idx == 0:
+                validate_speakers(args, train_dataset, model, optimizer, epoch, step, global_step, writer)
 
             audio = audio.to(args.device)
 
