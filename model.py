@@ -21,7 +21,7 @@ def audio_model(args):
     return model
 
 
-def load_model(args):
+def load_model(args, reload_model=False):
 
     if args.experiment == "audio":
         model = audio_model(args)
@@ -29,14 +29,18 @@ def load_model(args):
         raise NotImplementedError
 
     # reload model
-    if args.start_epoch > 0:
-        print("### RELOADING MODEL FROM CHECKPOINT {} ###".format(args.start_epoch))
-        model_fp = os.path.join(args.model_path, 'checkpoint_{}.tar'.format(args.start_epoch))
+    if args.start_epoch > 0 or reload_model:
+        if args.start_epoch == 0:
+            load_epoch = args.model_num
+        else:
+            load_epoch = args.start_epoch
+
+        print("### RELOADING MODEL FROM CHECKPOINT {} ###".format(load_epoch))
+        model_fp = os.path.join(args.model_path, "checkpoint_{}.tar".format(load_epoch))
         model.load_state_dict(torch.load(model_fp))
 
-    model = model.to(args.device)
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate) 
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
 
     if args.fp16:
         try:
@@ -59,15 +63,16 @@ def load_model(args):
     args.batch_size = args.batch_size * args.num_gpu
     return model, optimizer
 
+
 def save_model(args, model, optimizer, best=False):
     if best:
-        out = os.path.join(args.out_dir, 'best_checkpoint.tar')
+        out = os.path.join(args.out_dir, "best_checkpoint.tar")
     else:
-        out = os.path.join(args.out_dir, 'checkpoint_{}.tar'.format(args.current_epoch))
+        out = os.path.join(args.out_dir, "checkpoint_{}.tar".format(args.current_epoch))
 
     # To save a DataParallel model generically, save the model.module.state_dict().
     # This way, you have the flexibility to load the model any way you want to any device you want.
     torch.save(model.module.state_dict(), out)
 
-    with open(os.path.join(args.out_dir, 'best_checkpoint.txt'), 'w') as f:
+    with open(os.path.join(args.out_dir, "best_checkpoint.txt"), "w") as f:
         f.write(str(args.current_epoch))

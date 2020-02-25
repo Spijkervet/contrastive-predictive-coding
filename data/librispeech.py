@@ -72,7 +72,6 @@ class LibriDataset(Dataset):
     def __len__(self):
         return len(self.file_list)
 
-
     def get_audio_by_speaker(self, speaker_id, batch_size):
         batch_size = min(len(self.speaker_dict[speaker_id]), batch_size)
         batch = torch.zeros(batch_size, 1, self.audio_length)
@@ -82,3 +81,26 @@ class LibriDataset(Dataset):
             )
 
         return batch
+
+    def get_full_size_test_item(self, index):
+        """
+        get audio samples that cover the full length of the input files
+        used for testing the phone classification performance
+        """
+        speaker_id, dir_id, sample_id = self.file_list[index]
+        filename = "{}-{}-{}".format(speaker_id, dir_id, sample_id)
+        audio, samplerate = self.loader(
+            os.path.join(self.root, speaker_id, dir_id, "{}.flac".format(filename))
+        )
+
+        assert (
+            samplerate == 16000
+        ), "Watch out, samplerate is not consistent throughout the dataset!"
+
+        ## discard last part that is not a full 10ms
+        max_length = audio.size(1) // 160 * 160
+        audio = audio[:max_length]
+
+        audio = (audio - self.mean) / self.std
+
+        return audio, filename
