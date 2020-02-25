@@ -50,7 +50,8 @@ class InfoNCE(nn.Module):
         :param input_tensor: tensor to be broadcasted, generally of shape B x L x C
         :return: reshaped tensor of shape (B*L) x C
         """
-        assert input_tensor.size(0) == self.args.batch_size
+
+        assert input_tensor.size(0)
         assert len(input_tensor.size()) == 3
 
         return input_tensor.reshape(-1, input_tensor.size(2))
@@ -84,7 +85,7 @@ class InfoNCE(nn.Module):
         z = self.broadcast_batch_length(z)
         z_neg = torch.stack(
             [
-                torch.index_select(z, 0, torch.randperm(z.size(0)).to(self.args.device))
+                torch.index_select(z, 0, torch.randperm(z.size(0)).to(z.get_device()))
                 for i in range(self.negative_samples)
             ],
             2,

@@ -52,6 +52,9 @@ def train(args, model, optimizer, writer):
             # forward
             loss = model(audio)
 
+            # accumulate losses for all GPUs
+            loss = loss.mean()
+
             # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=10)
 
             # backward, depending on mixed-precision
@@ -144,7 +147,7 @@ def main(_run, _log):
     tb_dir = os.path.join(out_dir, _run.experiment_info["name"])
     os.makedirs(tb_dir)
     writer = SummaryWriter(log_dir=tb_dir)
-    writer.add_graph(model.module, torch.rand(args.batch_size, 1, 20480).to(args.device))
+    # writer.add_graph(model.module, torch.rand(args.batch_size, 1, 20480).to(args.device))
 
     try:
         train(args, model, optimizer, writer)
