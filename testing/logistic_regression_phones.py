@@ -11,7 +11,6 @@ from torch.utils.tensorboard import SummaryWriter
 from model import load_model, save_model
 from data.loaders import librispeech_loader
 from validation import validate_speakers
-from utils.accuracy import accuracy
 
 #### pass configuration
 from experiment import ex
@@ -44,6 +43,7 @@ def train(
             ### get latent representations for current audio
             model_input = audio.to(args.device)
             model_input = torch.unsqueeze(model_input, 0)
+
 
             targets = torch.LongTensor(phone_dict[filename])
             targets = targets.to(args.device).reshape(-1)
