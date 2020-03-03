@@ -76,7 +76,6 @@ def train(args, context_model, loss, train_loader, optimizer, writer):
             acc_epoch += accuracy
             total_i += 1
 
-        logs.append_train_loss([loss_epoch / total_step])
         writer.add_scalar("Loss/train_epoch", loss_epoch / total_step, epoch)
         writer.add_scalar("Accuracy/train_epoch", acc_epoch / total_step, epoch)
         writer.flush()
