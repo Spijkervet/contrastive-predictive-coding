@@ -29,7 +29,7 @@ def train(args, model, optimizer, writer):
     )
 
     total_step = len(train_loader)
-    print_idx = 100
+    print_idx = 10
 
     # at which step to validate training
     validation_idx = 1000
@@ -40,12 +40,12 @@ def train(args, model, optimizer, writer):
     global_step = 0
     for epoch in range(args.start_epoch, args.start_epoch + args.num_epochs):
         loss_epoch = 0
-        for step, (audio, filename, _, start_idx) in enumerate(train_loader):
+        for step, (audio, filename, start_idx) in enumerate(train_loader):
 
             start_time = time.time()
 
-            if step % validation_idx == 0:
-                validate_speakers(args, train_dataset, model, optimizer, epoch, step, global_step, writer)
+            # if step % validation_idx == 0:
+            #     validate_speakers(args, train_dataset, model, optimizer, epoch, step, global_step, writer)
 
             audio = audio.to(args.device)
 
@@ -132,7 +132,7 @@ def main(_run, _log):
     args.time = time.ctime()
 
     # Device configuration
-    args.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    args.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     args.current_epoch = args.start_epoch
 
