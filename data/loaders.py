@@ -9,10 +9,7 @@ def librispeech_loader(opt, num_workers=16):
         print("Using Train / Val Split")
         train_dataset = LibriDataset(
             opt,
-            os.path.join(
-                opt.data_input_dir,
-                "LibriSpeech/train-clean-100",
-            ),
+            opt.data_input_dir,
             os.path.join(
                 opt.data_input_dir, "LibriSpeech100_labels_split/train_val_train.txt"
             ),
@@ -20,10 +17,7 @@ def librispeech_loader(opt, num_workers=16):
 
         test_dataset = LibriDataset(
             opt,
-            os.path.join(
-                opt.data_input_dir,
-                "LibriSpeech/train-clean-100",
-            ),
+            opt.data_input_dir,
             os.path.join(
                 opt.data_input_dir, "LibriSpeech100_labels_split/train_val_val.txt"
             ),
@@ -33,10 +27,7 @@ def librispeech_loader(opt, num_workers=16):
         print("Using Train+Val / Test Split")
         train_dataset = LibriDataset(
             opt,
-            os.path.join(
-                opt.data_input_dir,
-                "LibriSpeech/train-clean-100",
-            ),
+            opt.data_input_dir,
             os.path.join(
                 opt.data_input_dir, "LibriSpeech100_labels_split/train_split.txt"
             ),
@@ -44,10 +35,7 @@ def librispeech_loader(opt, num_workers=16):
 
         test_dataset = LibriDataset(
             opt,
-            os.path.join(
-                opt.data_input_dir,
-                "LibriSpeech/train-clean-100",
-            ),
+            opt.data_input_dir,
             os.path.join(
                 opt.data_input_dir, "LibriSpeech100_labels_split/test_split.txt"
             ),
