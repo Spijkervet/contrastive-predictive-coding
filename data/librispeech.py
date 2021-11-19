@@ -55,6 +55,9 @@ class LibriDataset(Dataset):
 
         self.loader = loader
         self.audio_length = audio_length
+        self.mel_length = 320
+        self.melspec = torchaudio.transforms.MelSpectrogram(n_fft=1024, win_length=1024, hop_length=256,
+                            f_min=125, f_max=7600, n_mels=80, power=1, normalized=True)
 
     def __getitem__(self, index):
         filename = self.file_list[index]
@@ -63,10 +66,6 @@ class LibriDataset(Dataset):
 
         # discard last part that is not a full 10ms
         max_length = audio.size(1) // 160 * 160
-
-        start_idx = np.random.choice(
-            np.arange(160, max_length - self.audio_length - 0, 160)
-        )
 
         audio = audio[:, start_idx: start_idx + self.audio_length]
 

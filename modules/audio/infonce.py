@@ -3,7 +3,7 @@ InfoNCE
 Calculates the 'Info Noise-Contrastive-Estimation' as explained by Van den Oord et al. (2018),
 implementation by Bas Veeling & Sindy Lowe
 """
-
+import numpy as np
 import torch
 import torch.nn as nn
 
