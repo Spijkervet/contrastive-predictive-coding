@@ -40,12 +40,12 @@ def train(args, model, optimizer, writer):
     global_step = 0
     for epoch in range(args.start_epoch, args.start_epoch + args.num_epochs):
         loss_epoch = 0
-        for step, (audio, filename, start_idx) in enumerate(train_loader):
+        for step, (audio, filename, _, start_idx) in enumerate(train_loader):
 
             start_time = time.time()
 
-            # if step % validation_idx == 0:
-            #     validate_speakers(args, train_dataset, model, optimizer, epoch, step, global_step, writer)
+            if step % validation_idx == 0:
+                validate_speakers(args, train_dataset, model, optimizer, epoch, step, global_step, writer)
 
             audio = audio.to(args.device)
 
@@ -113,7 +113,8 @@ def train(args, model, optimizer, writer):
             save_model(args, model, optimizer, best=True)
 
         # save current model state
-        save_model(args, model, optimizer)
+        if args.current_epoch % 50 == 0:
+            save_model(args, model, optimizer)
         args.current_epoch += 1
 
 
