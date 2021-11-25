@@ -50,12 +50,10 @@ def train(args, model, optimizer, writer):
             audio = audio.to(args.device)
 
             # forward
-            nce_loss, trpl_loss = model(audio, anc_mel, pos_mel, neg_mel)
-            nce_loss = nce_loss.mean()
-            trpl_loss = trpl_loss.mean()
+            loss = model(audio)
 
             # accumulate losses for all GPUs
-            loss = nce_loss + trpl_loss
+            loss = loss.mean()
 
             # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=10)
 
@@ -73,22 +71,18 @@ def train(args, model, optimizer, writer):
                 examples_per_second = args.batch_size / (time.time() - start_time)
                 print(
                     "[Epoch {}/{}] Train step {:04d}/{:04d} \t Examples/s = {:.2f} \t "
-                    "Loss = {:.4f} \t NCE = {:.4f} \t Triplet = {:.4f} \t Time/step = {:.4f}".format(
+                    "Loss = {:.4f} \t Time/step = {:.4f}".format(
                         epoch,
                         args.num_epochs,
                         step,
                         len(train_loader),
                         examples_per_second,
                         loss,
-                        nce_loss,
-                        trpl_loss,
                         time.time() - start_time,
                     )
                 )
 
             writer.add_scalar("Loss/train_step", loss, global_step)
-            writer.add_scalar("Loss/nce", nce_loss, global_step)
-            writer.add_scalar("Loss/triplet", trpl_loss, global_step)
             loss_epoch += loss
             global_step += 1
 

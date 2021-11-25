@@ -2,7 +2,6 @@ import torch
 from .encoder import Encoder
 from .autoregressor import Autoregressor
 from .infonce import InfoNCE
-from .resnet import ResNetSimCLR
 
 class CPC(torch.nn.Module):
     def __init__(
@@ -24,8 +23,6 @@ class CPC(torch.nn.Module):
         self.autoregressor = Autoregressor(args, input_dim=genc_hidden, hidden_dim=gar_hidden)
 
         self.loss = InfoNCE(args, gar_hidden, genc_hidden)
-        self.static_encoder = ResNetSimCLR('resnet50', 256)
-        self.triplet_loss = torch.nn.TripletMarginLoss(5.0)
 
     def get_latent_size(self, input_size):
         x = torch.zeros(input_size).to(self.args.device)
@@ -54,19 +51,16 @@ class CPC(torch.nn.Module):
         z = z.permute(0, 2, 1)  # swap L and C
 
         # calculate latent representation from the autoregressor
-        # c = self.autoregressor(z)
+        c = self.autoregressor(z)
 
         # TODO checked
-        return z
+        return z, c
 
 
-    def forward(self, x, anc, pos, neg):
+    def forward(self, x):
         # x: (b, 1, 20480)
-        z = self.get_latent_representations(x)
-        ca, cp, cn = self.static_encoder(anc), self.static_encoder(pos), self.static_encoder(neg)
-        ca, cp, cn = ca.squeeze(), cp.squeeze(), cn.squeeze()
+        z, c = self.get_latent_representations(x)
         # z: (b, 128, 512) c: (b, 128, 256)
-        loss, accuracy = self.loss.get(x, z, ca.unsqueeze(1).expand(-1, 128, -1))
-        trpl_loss = self.triplet_loss(ca, cp, cn)
-        return loss, trpl_loss, accuracy, z, ca
+        loss, accuracy = self.loss.get(x, z, c)
+        return loss, accuracy, z, c
 

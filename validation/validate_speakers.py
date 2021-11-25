@@ -25,7 +25,7 @@ def tsne(args, features):
 
 def validate_speakers(args, dataset, model, optimizer, epoch, step, global_step, writer):
 
-    max_speakers = 10
+    max_speakers = 20
     batch_size = 40
     input_size = (args.batch_size, 1, 20480)
 
@@ -40,7 +40,7 @@ def validate_speakers(args, dataset, model, optimizer, epoch, step, global_step,
         labels = torch.zeros(max_speakers, batch_size).to(args.device)
 
         for idx, speaker_idx in enumerate(dataset.speaker_dict):
-            if idx == 10:
+            if idx == 20:
                 break
 
             model_in = dataset.get_audio_by_speaker(speaker_idx, batch_size=batch_size)

@@ -2,6 +2,7 @@ import torch.nn as nn
 import torch
 
 from data import loaders
+from data.librispeech import genre_to_id, id_to_genre
 
 class Speaker_Loss(nn.Module):
     def __init__(self, args, hidden_dim, calc_accuracy):
@@ -38,7 +39,7 @@ class Speaker_Loss(nn.Module):
 
         targets = torch.zeros(len(filename)).long()
         for idx, _ in enumerate(filename):
-            targets[idx] = self.speaker_id_dict[filename[idx].split("-")[0]]
+            targets[idx] = torch.tensor(genre_to_id[id_to_genre[filename[idx].split("/")[-1][:4]]])
         targets = targets.to(self.args.device).squeeze()
 
         # forward pass
