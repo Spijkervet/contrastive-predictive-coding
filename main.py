@@ -29,7 +29,7 @@ def train(args, model, optimizer, writer):
     )
 
     total_step = len(train_loader)
-    print_idx = 100
+    print_idx = 10
 
     # at which step to validate training
     validation_idx = 1000
@@ -113,7 +113,8 @@ def train(args, model, optimizer, writer):
             save_model(args, model, optimizer, best=True)
 
         # save current model state
-        save_model(args, model, optimizer)
+        if args.current_epoch % 50 == 0:
+            save_model(args, model, optimizer)
         args.current_epoch += 1
 
 
@@ -132,7 +133,7 @@ def main(_run, _log):
     args.time = time.ctime()
 
     # Device configuration
-    args.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    args.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     args.current_epoch = args.start_epoch
 

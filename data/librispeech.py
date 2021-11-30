@@ -4,57 +4,63 @@ import torchaudio
 import numpy as np
 from torch.utils.data import Dataset
 from collections import defaultdict
+from glob import glob
+import pandas as pd
+
+csv_input = pd.read_csv(filepath_or_buffer='/groups/1/gcc50521/furukawa/musicnet_metadata.csv', sep=",")
+genre_to_id = {
+    'Solo Piano': 0, 'String Quartet': 1, 'Accompanied Violin': 2, 'Piano Quartet': 3, 'Accompanied Cello': 4,
+    'String Sextet': 5, 'Piano Trio': 6, 'Piano Quintet': 7, 'Wind Quintet': 8, 'Horn Piano Trio': 9, 'Wind Octet': 10,
+    'Clarinet-Cello-Piano Trio': 11, 'Pairs Clarinet-Horn-Bassoon': 12, 'Clarinet Quintet': 13, 'Solo Cello': 14,
+    'Accompanied Clarinet': 15, 'Solo Violin': 16, 'Violin and Harpsichord': 17, 'Viola Quintet': 18, 'Solo Flute': 19,
+    'Wind and Strings Octet': 20
+}
+id_to_genre = {}
+for idx, row in csv_input.iterrows():
+    genre = row['ensemble']
+    song_id = str(row['id'])
+    id_to_genre[song_id] = genre
 
 
 def default_loader(path):
     return torchaudio.load(path, normalization=False)
 
 
-def default_flist_reader(flist):
-    item_list = []
+def default_flist_reader(root_dir):
     speaker_dict = defaultdict(list)
-    index = 0
-    with open(flist, "r") as rf:
-        for line in rf.readlines():
-            speaker_id, dir_id, sample_id = line.replace("\n", "").split("-")
-            item_list.append((speaker_id, dir_id, sample_id))
-            speaker_dict[speaker_id].append(index)
-            index += 1
+    item_list = []
+    for index, x in enumerate(sorted(glob(os.path.join(root_dir, '*.npy')))):
+        filename = x.split('/')[-1]
+        speaker_id = id_to_genre[filename[:4]]
+        item_list.append(speaker_id)
+        speaker_dict[speaker_id].append(index)
 
-    return item_list, speaker_dict
+    return speaker_dict, item_list
 
 
 class LibriDataset(Dataset):
     def __init__(
-        self,
-        opt,
-        root,
-        flist,
-        audio_length=20480,
-        flist_reader=default_flist_reader,
-        loader=default_loader,
+            self,
+            opt,
+            root,
+            flist,
+            audio_length=20480,
+            flist_reader=default_flist_reader,
+            loader=default_loader,
     ):
         self.root = root
         self.opt = opt
 
-        self.file_list, self.speaker_dict = flist_reader(flist)
+        self.file_list = sorted(glob(os.path.join(root, '*.npy')))
+        self.speaker_dict, self.item_list = flist_reader(root)
 
         self.loader = loader
         self.audio_length = audio_length
 
-        self.mean = -1456218.7500
-        self.std = 135303504.0
-
     def __getitem__(self, index):
-        speaker_id, dir_id, sample_id = self.file_list[index]
-        filename = "{}-{}-{}".format(speaker_id, dir_id, sample_id)
-        audio, samplerate = self.loader(
-            os.path.join(self.root, speaker_id, dir_id, "{}.flac".format(filename))
-        )
-
-        assert (
-            samplerate == 16000
-        ), "Watch out, samplerate is not consistent throughout the dataset!"
+        filename = self.file_list[index]
+        audio = torch.from_numpy(np.load(filename)).unsqueeze(0)
+        speaker_id = self.item_list[index]
 
         # discard last part that is not a full 10ms
         max_length = audio.size(1) // 160 * 160
@@ -63,10 +69,9 @@ class LibriDataset(Dataset):
             np.arange(160, max_length - self.audio_length - 0, 160)
         )
 
-        audio = audio[:, start_idx : start_idx + self.audio_length]
+        audio = audio[:, start_idx: start_idx + self.audio_length]
 
         # normalize the audio samples
-        audio = (audio - self.mean) / self.std
         return audio, filename, speaker_id, start_idx
 
     def __len__(self):
@@ -87,20 +92,11 @@ class LibriDataset(Dataset):
         get audio samples that cover the full length of the input files
         used for testing the phone classification performance
         """
-        speaker_id, dir_id, sample_id = self.file_list[index]
-        filename = "{}-{}-{}".format(speaker_id, dir_id, sample_id)
-        audio, samplerate = self.loader(
-            os.path.join(self.root, speaker_id, dir_id, "{}.flac".format(filename))
-        )
-
-        assert (
-            samplerate == 16000
-        ), "Watch out, samplerate is not consistent throughout the dataset!"
+        filename = self.file_list[index]
+        audio = torch.from_numpy(np.load(filename)).unsqueeze(0)
 
         ## discard last part that is not a full 10ms
         max_length = audio.size(1) // 160 * 160
         audio = audio[:max_length]
-
-        audio = (audio - self.mean) / self.std
 
         return audio, filename

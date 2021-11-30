@@ -58,7 +58,9 @@ class CPC(torch.nn.Module):
 
 
     def forward(self, x):
+        # x: (b, 1, 20480)
         z, c = self.get_latent_representations(x)
+        # z: (b, 128, 512) c: (b, 128, 256)
         loss, accuracy = self.loss.get(x, z, c)
         return loss, accuracy, z, c
 
